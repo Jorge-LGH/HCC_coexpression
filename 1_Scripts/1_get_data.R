@@ -92,7 +92,15 @@ samples_data[which(samples_data$Sample_type == "Normal"),]$Variant <- rep("Norma
   samples_data$Sample_type == "Normal"),]$Variant))
 
 # Add the subtype value even though every single sample is the same subtype of cancer
-samples_data$Subtype <- rep("HCC", nrow(samples_data))
+subtype <- c()
+for(i in samples_data$Sample_type){
+  if(i == "Normal"){
+    subtype <- append(subtype, i)
+  }else{
+    subtype <- append(subtype, "HCC")
+  }
+}
+samples_data$Subtype <- subtype
 
 # Check for multiple samples in patients
 # There are 39 samples that provide normal tissue along with primary tissue sample
