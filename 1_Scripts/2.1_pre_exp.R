@@ -198,45 +198,23 @@ mycountsbio <- dat(noiseqData, type = "countsbio", factor = "Subtype")          
 
 # Check expression bias values
 png("2_Plots/Boxplot_subtype_exp_norm.png", width = 1000, height = 700)
-explo.plot(mycountsbio, plottype = "boxplot", samples= 1:2)      # Exploratory boxplot demonstrating the expression values for both types
+explo.plot(mycountsbio, plottype = "boxplot", samples= 1:2)                                       # Exploratory boxplot demonstrating the expression values for both types
 dev.off()
-#######################################################################################################
-#######################################################################################################
-
-
-
 
 # GC bias
 GCcontent <- dat(noiseqData,  logtransf = T, type = "GCbias", norm = T, factor = "Subtype")
-GCcontent                                                                        # View object for better understanding
-par(mfrow=c(1,2))                                                                    # Show the plot
-sapply(1:2,function(x) explo.plot(GCcontent, samples = x))                                                 # Show the GC content 
+GCcontent                                                                                         # View object for better understanding
+par(mfrow=c(1,2))                                                                                 # Show the plot
+sapply(1:2,function(x) explo.plot(GCcontent, samples = x))                                        # Show the GC content 
 
 # Length bias
 lenbias <- dat(noiseqData, k = 0, type = "lengthbias", factor = "Subtype")
-par(mfrow=c(1,2))                                                                    # Show the plot
-png("2_Plots/length_subtype_exp_norm.png", width = 1000, height = 700)
-sapply(1:2,function(x) explo.plot(lenbias, samples = x))                                                      # Show the length bias
+par(mfrow=c(1,2))                                                                                 # Show the plot
+sapply(1:2,function(x) explo.plot(lenbias, samples = x))                                          # Show the length bias
+par(mfrow=c(1,1))  
 
-#-----Duplicates and save data-----
-sum(duplicated(design_exp$Patient_id))                                                        # 4 patients have multiple samples (29-08-2024)
-duplicates <- design_exp$Patient_id[duplicated(design_exp$Patient_id)]                        # Extract patients' ids
-duplicates <- lapply(duplicates,function(x) design_exp$barcode[design_exp$Patient_id==x])     # Get the duplicates' barcodes
-
-final  <- exprs(full_data)                                                                    # Get expression values from all samples, including duplicates
-duplis <- final[, colnames(final) %in% unlist(duplicates)]                                    # Retrieve expression values only from duplicates
-prefi  <- final[, !colnames(final) %in% unlist(duplicates)]                                   # Retrieve expression values from non-duplicates
-
-duplicates <- do.call(cbind,lapply(duplicates,function(x)                                     # Get the average expression for the duplicates and set it as the expression value
-  rowMeans(duplis[,colnames(duplis)%in%x])))
-
-colnames(duplicates) <- design_exp$Patient_id[duplicated(design_exp$Patient_id)]              # Set the column names 
-colnames(prefi) <- substr(colnames(prefi),1,19)                                               # Set column names
-
-final <- cbind(prefi,duplicates)                                                              # Combine the averaged duplicates with the rest of the samples
-dim(final)                                                                                    # 10,049 genes in 41 unique samples (06-09-2024)
-final <- final[,order(match(colnames(final),samples_data$Experiment_id))]                     # Sort the expression matrix
-
-write.table(final, "RNAseqnormalized.tsv", sep='\t', quote=F)                                 # Write table
+#----------Final matrix----------
+final_exp_mat <- exprs(full_data)                                                                 # Extract final expression matrix 
+write.table(final_exp_mat, "3_Data/RNAseqnormalized.tsv", sep='\t', quote=F)                      # Write table
 
 
